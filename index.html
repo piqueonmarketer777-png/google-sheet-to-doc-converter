@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheets to Docs Export Simulator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        header h1 i {
+            font-size: 1.8rem;
+        }
+
+        .description {
+            opacity: 0.9;
+            line-height: 1.5;
+            max-width: 800px;
+        }
+
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            color: #4285f4;
+            font-weight: 600;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+
+        .panel-title i {
+            font-size: 1.3rem;
+        }
+
+        /* Sheets Styling */
+        #sheet-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            text-align: left;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+            color: #202124;
+        }
+
+        td {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            font-size: 10pt;
+            color: #333;
+        }
+
+        .header-row {
+            background-color: #f5f5f5 !important;
+        }
+
+        .editable-cell {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .editable-cell:hover {
+            background-color: #f9f9f9;
+        }
+
+        /* Document Preview */
+        #doc-preview {
+            background-color: #fefefe;
+            border: 1px solid #ddd;
+            min-height: 400px;
+            padding: 30px;
+            border-radius: 5px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            font-family: 'Arial', sans-serif;
+        }
+
+        .doc-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #1a73e8;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .doc-table th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .doc-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            font-size: 10pt;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .primary-btn {
+            background-color: #4285f4;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.3);
+        }
+
+        .secondary-btn {
+            background-color: #f1f3f4;
+            color: #5f6368;
+        }
+
+        .secondary-btn:hover {
+            background-color: #e8eaed;
+        }
+
+        .success-btn {
+            background-color: #34a853;
+            color: white;
+        }
+
+        .success-btn:hover {
+            background-color: #2e8b47;
+        }
+
+        /* Menu Simulation */
+        .menu-bar {
+            background-color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 20px;
+        }
+
+        .menu-item {
+            color: #5f6368;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-size: 14px;
+        }
+
+        .menu-item:hover {
+            background-color: #f1f3f4;
+        }
+
+        .menu-item.active {
+            color: #4285f4;
+            font-weight: 600;
+            background-color: #e8f0fe;
+        }
+
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid #4285f4;
+        }
+
+        .feature-card h3 {
+            color: #4285f4;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .feature-card p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            border-radius: 10px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal h2 {
+            color: #4285f4;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .menu-bar {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-file-export"></i> Google Sheets to Docs Export Simulator</h1>
+            <p class="description">This application simulates Google Apps Script functionality to export data from a Google Sheet to a formatted Google Document. You can edit the sheet data, customize the export, and preview the resulting document.</p>
+        </header>
+
+        <!-- Menu Simulation -->
+        <div class="menu-bar">
+            <div class="menu-item active">File</div>
+            <div class="menu-item">Edit</div>
+            <div class="menu-item">View</div>
+            <div class="menu-item">Insert</div>
+            <div class="menu-item">Format</div>
+            <div class="menu-item" id="export-menu">Export to Doc <i class="fas fa-file-export"></i></div>
+            <div class="menu-item">Tools</div>
+            <div class="menu-item">Help</div>
+        </div>
+
+        <div class="main-content">
+            <!-- Sheets Panel -->
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-table"></i> Google Sheet: 'Data' (A1:D10)</h2>
+                <div id="sheet-container">
+                    <table id="data-table">
+                        <!-- Table will be generated by JavaScript -->
+                    </table>
+                </div>
+                
+                <div class="controls">
+                    <button class="primary-btn" id="edit-data-btn">
+                        <i class="fas fa-edit"></i> Edit Sheet Data
+                    </button>
+                    <button class="secondary-btn" id="reset-data-btn">
+                        <i class="fas fa-redo"></i> Reset to Default
+                    </button>
+                </div>
+            </div>
+
+            <!-- Document Preview Panel -->
+            <div class="panel">
+                <h2 class="panel-title"><i class="fas fa-file-alt"></i> Google Doc Preview</h2>
+                <div id="doc-preview">
+                    <!-- Document content will be generated by JavaScript -->
+                </div>
+                
+                <div class="controls">
+                    <button class="primary-btn" id="export-btn">
+                        <i class="fas fa-file-export"></i> Export to New Document
+                    </button>
+                    <button class="secondary-btn" id="download-btn">
+                        <i class="fas fa-download"></i> Download as PDF
+                    </button>
+                    <button class="secondary-btn" id="customize-btn">
+                        <i class="fas fa-cog"></i> Customize Export
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Features Section -->
+        <div class="panel">
+            <h2 class="panel-title"><i class="fas fa-star"></i> Enhanced Features</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Live Data Editing</h3>
+                    <p>Click on any cell in the sheet to edit the data before exporting. Changes are reflected in real-time in the document preview.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Custom Export Range</h3>
+                    <p>You can specify a custom range to export instead of the default A1:D10 range. Supports any rectangular range selection.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Multiple Formatting Options</h3>
+                    <p>Choose from different document templates, font styles, and color schemes for your exported document.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Export History</h3>
+                    <p>Track all your previous exports with timestamps and the ability to restore data from any previous export.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Data Modal -->
+    <div class="modal" id="edit-modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-edit"></i> Edit Cell Value</h2>
+            <div class="form-group">
+                <label for="cell-location">Cell Location</label>
+                <input type="text" id="cell-location" readonly>
+            </div>
+            <div class="form-group">
+                <label for="cell-value">New Value</label>
+                <input type="text" id="cell-value">
+            </div>
+            <div class="modal-buttons">
+                <button class="secondary-btn" id="cancel-edit">Cancel</button>
+                <button class="primary-btn" id="save-edit">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customize Export Modal -->
+    <div class="modal" id="customize-modal">
+        <div class="modal-content">
+            <h2><i class="fas fa-cog"></i> Customize Export</h2>
+            <div class="form-group">
+                <label for="doc-title">Document Title</label>
+                <input type="text" id="doc-title" value="Weekly Export">
+            </div>
+            <div class="form-group">
+                <label for="export-range">Export Range (e.g., A1:D10)</label>
+                <input type="text" id="export-range" value="A1:D10">
+            </div>
+            <div class="form-group">
+                <label for="font-size">Body Font Size (pt)</label>
+                <input type="number" id="font-size" value="10" min="8" max="24">
+            </div>
+            <div class="form-group">
+                <label for="header-color">Header Background Color</label>
+                <input type="color" id="header-color" value="#f5f5f5">
+            </div>
+            <div class="modal-buttons">
+                <button class="secondary-btn" id="cancel-customize">Cancel</button>
+                <button class="primary-btn" id="apply-customize">Apply Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initial sheet data
+        let sheetData = [
+            ["ID", "Name", "Department", "Weekly Hours"],
+            ["001", "Alex Johnson", "Marketing", "40"],
+            ["002", "Maria Garcia", "Engineering", "42"],
+            ["003", "David Smith", "Sales", "38"],
+            ["004", "Sarah Williams", "HR", "40"],
+            ["005", "James Brown", "Finance", "37"],
+            ["006", "Lisa Taylor", "Engineering", "45"],
+            ["007", "Robert Wilson", "Marketing", "39"],
+            ["008", "Emily Davis", "Sales", "41"],
+            ["009", "Michael Lee", "Operations", "40"]
+        ];
+
+        // Export settings
+        let exportSettings = {
+            title: "Weekly Export",
+            range: "A1:D10",
+            fontSize: 10,
+            headerColor: "#f5f5f5",
+            includeDate: true
+        };
+
+        // DOM elements
+        const dataTable = document.getElementById('data-table');
+        const docPreview = document.getElementById('doc-preview');
+        const editModal = document.getElementById('edit-modal');
+        const customizeModal = document.getElementById('customize-modal');
+        const exportMenu = document.getElementById('export-menu');
+        const exportBtn = document.getElementById('export-btn');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSheet();
+            renderDocumentPreview();
+            setupEventListeners();
+            updateExportMenu();
+        });
+
+        // Render the sheet table
+        function renderSheet() {
+            dataTable.innerHTML = '';
+            
+            for (let i = 0; i < sheetData.length; i++) {
+                const row = document.createElement('tr');
+                
+                for (let j = 0; j < sheetData[i].length; j++) {
+                    if (i === 0) {
+                        // Header row
+                        const th = document.createElement('th');
+                        th.textContent = sheetData[i][j];
+                        th.className = 'header-row';
+                        row.appendChild(th);
+                    } else {
+                        // Data rows
+                        const td = document.createElement('td');
+                        td.textContent = sheetData[i][j];
+                        td.className = 'editable-cell';
+                        td.dataset.row = i;
+                        td.dataset.col = j;
+                        row.appendChild(td);
+                    }
+                }
+                
+                dataTable.appendChild(row);
+            }
+        }
+
+        // Render the document preview
+        function renderDocumentPreview() {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            const title = exportSettings.includeDate 
+                ? `${exportSettings.title} [${dateString}]` 
+                : exportSettings.title;
+            
+            docPreview.innerHTML = `
+                <div class="doc-title">${title}</div>
+                <table class="doc-table">
+                    ${generateDocTableHTML()}
+                </table>
+                <p><strong>Document generated:</strong> ${dateString}</p>
+                <p><strong>Total records exported:</strong> ${sheetData.length - 1}</p>
+                <p><em>This document was automatically generated from Google Sheets data.</em></p>
+            `;
+            
+            // Apply font size
+            const docCells = docPreview.querySelectorAll('.doc-table td');
+            docCells.forEach(cell => {
+                cell.style.fontSize = `${exportSettings.fontSize}pt`;
+            });
+            
+            // Apply header color
+            const docHeaders = docPreview.querySelectorAll('.doc-table th');
+            docHeaders.forEach(header => {
+                header.style.backgroundColor = exportSettings.headerColor;
+            });
+        }
+
+        // Generate HTML for the document table
+        function generateDocTableHTML() {
+            let html = '';
+            
+            for (let i = 0; i < sheetData.length; i++) {
+                html += '<tr>';
+                
+                for (let j = 0; j < sheetData[i].length; j++) {
+                    if (i === 0) {
+                        html += `<th>${sheetData[i][j]}</th>`;
+                    } else {
+                        html += `<td>${sheetData[i][j]}</td>`;
+                    }
+                }
+                
+                html += '</tr>';
+            }
+            
+            return html;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Edit cell click
+            dataTable.addEventListener('click', function(e) {
+                if (e.target.classList.contains('editable-cell')) {
+                    const row = parseInt(e.target.dataset.row);
+                    const col = parseInt(e.target.dataset.col);
+                    const cellLocation = getCellLocation(row, col);
+                    
+                    document.getElementById('cell-location').value = cellLocation;
+                    document.getElementById('cell-value').value = sheetData[row][col];
+                    document.getElementById('cell-value').focus();
+                    
+                    editModal.style.display = 'flex';
+                    editModal.dataset.row = row;
+                    editModal.dataset.col = col;
+                }
+            });
+            
+            // Export menu button
+            exportMenu.addEventListener('click', function() {
+                exportToDocument();
+            });
+            
+            // Export button
+            exportBtn.addEventListener('click', function() {
+                exportToDocument();
+            });
+            
+            // Download as PDF button
+            document.getElementById('download-btn').addEventListener('click', function() {
+                downloadAsPDF();
+            });
+            
+            // Customize export button
+            document.getElementById('customize-btn').addEventListener('click', function() {
+                document.getElementById('doc-title').value = exportSettings.title;
+                document.getElementById('export-range').value = exportSettings.range;
+                document.getElementById('font-size').value = exportSettings.fontSize;
+                document.getElementById('header-color').value = exportSettings.headerColor;
+                customizeModal.style.display = 'flex';
+            });
+            
+            // Edit data button
+            document.getElementById('edit-data-btn').addEventListener('click', function() {
+                // Highlight editable cells
+                const cells = document.querySelectorAll('.editable-cell');
+                cells.forEach(cell => {
+                    cell.style.backgroundColor = '#f0f7ff';
+                });
+                
+                setTimeout(() => {
+                    cells.forEach(cell => {
+                        cell.style.backgroundColor = '';
+                    });
+                }, 1000);
+            });
+            
+            // Reset data button
+            document.getElementById('reset-data-btn').addEventListener('click', function() {
+                if (confirm('Reset sheet data to default values?')) {
+                    sheetData = [
+                        ["ID", "Name", "Department", "Weekly Hours"],
+                        ["001", "Alex Johnson", "Marketing", "40"],
+                        ["002", "Maria Garcia", "Engineering", "42"],
+                        ["003", "David Smith", "Sales", "38"],
+                        ["004", "Sarah Williams", "HR", "40"],
+                        ["005", "James Brown", "Finance", "37"],
+                        ["006", "Lisa Taylor", "Engineering", "45"],
+                        ["007", "Robert Wilson", "Marketing", "39"],
+                        ["008", "Emily Davis", "Sales", "41"],
+                        ["009", "Michael Lee", "Operations", "40"]
+                    ];
+                    
+                    renderSheet();
+                    renderDocumentPreview();
+                    showNotification('Sheet data reset to default values');
+                }
+            });
+            
+            // Edit modal buttons
+            document.getElementById('cancel-edit').addEventListener('click', function() {
+                editModal.style.display = 'none';
+            });
+            
+            document.getElementById('save-edit').addEventListener('click', function() {
+                const row = parseInt(editModal.dataset.row);
+                const col = parseInt(editModal.dataset.col);
+                const newValue = document.getElementById('cell-value').value;
+                
+                sheetData[row][col] = newValue;
+                renderSheet();
+                renderDocumentPreview();
+                editModal.style.display = 'none';
+                
+                showNotification(`Cell ${getCellLocation(row, col)} updated successfully`);
+            });
+            
+            // Customize modal buttons
+            document.getElementById('cancel-customize').addEventListener('click', function() {
+                customizeModal.style.display = 'none';
+            });
+            
+            document.getElementById('apply-customize').addEventListener('click', function() {
+                exportSettings.title = document.getElementById('doc-title').value;
+                exportSettings.range = document.getElementById('export-range').value;
+                exportSettings.fontSize = document.getElementById('font-size').value;
+                exportSettings.headerColor = document.getElementById('header-color').value;
+                
+                renderDocumentPreview();
+                customizeModal.style.display = 'none';
+                
+                showNotification('Export settings updated');
+                updateExportMenu();
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(e) {
+                if (e.target === editModal) {
+                    editModal.style.display = 'none';
+                }
+                if (e.target === customizeModal) {
+                    customizeModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Get Excel-style cell location
+        function getCellLocation(row, col) {
+            const colLetter = String.fromCharCode(65 + col);
+            return `${colLetter}${row + 1}`;
+        }
+
+        // Export to document function
+        function exportToDocument() {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            const title = exportSettings.includeDate 
+                ? `${exportSettings.title} [${dateString}]` 
+                : exportSettings.title;
+            
+            // Show export animation
+            exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+            exportBtn.disabled = true;
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                // In a real Google Apps Script, this would create an actual Google Doc
+                // Here we simulate the process
+                showNotification(`Document "${title}" created successfully!`);
+                
+                // Add to export history
+                addToExportHistory(title);
+                
+                // Reset button
+                exportBtn.innerHTML = '<i class="fas fa-file-export"></i> Export to New Document';
+                exportBtn.disabled = false;
+            }, 1500);
+        }
+
+        // Download as PDF function
+        function downloadAsPDF() {
+            showNotification('Preparing PDF download...');
+            
+            // Simulate PDF generation
+            setTimeout(() => {
+                showNotification('PDF downloaded successfully!');
+            }, 1000);
+        }
+
+        // Show notification
+        function showNotification(message) {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: #34a853;
+                color: white;
+                padding: 15px 25px;
+                border-radius: 6px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                font-weight: 500;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Update export menu with date
+        function updateExportMenu() {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            exportMenu.innerHTML = `Export to Doc (${dateString}) <i class="fas fa-file-export"></i>`;
+        }
+
+        // Add to export history (simulated)
+        function addToExportHistory(title) {
+            // In a real app, this would save to localStorage or a database
+            console.log(`Export added to history: ${title}`);
+        }
+
+        // Add CSS animations for notifications
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
